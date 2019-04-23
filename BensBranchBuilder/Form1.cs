@@ -16,6 +16,7 @@ namespace BensBranchBuilder
 	{
 		public BensBranchBuilder()
 		{
+			InitializeComponent();
 			if (File.Exists("cache.txt"))
 			{
 				// Open the stream and read it back.    
@@ -28,7 +29,6 @@ namespace BensBranchBuilder
 					}
 				}
 			}
-			InitializeComponent();
 		}
 
 		public enum ProcessType

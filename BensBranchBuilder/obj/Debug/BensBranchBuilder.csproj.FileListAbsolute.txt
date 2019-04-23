@@ -1,10 +1,9 @@
 C:\Users\bena\Source\Repos\BensBranchBuilder\BensBranchBuilder\bin\Debug\BensBranchBuilder.exe.config
 C:\Users\bena\Source\Repos\BensBranchBuilder\BensBranchBuilder\bin\Debug\BensBranchBuilder.exe
 C:\Users\bena\Source\Repos\BensBranchBuilder\BensBranchBuilder\bin\Debug\BensBranchBuilder.pdb
-C:\Users\bena\Source\Repos\BensBranchBuilder\BensBranchBuilder\obj\Debug\BensBranchBuilder.Form1.resources
 C:\Users\bena\Source\Repos\BensBranchBuilder\BensBranchBuilder\obj\Debug\BensBranchBuilder.Properties.Resources.resources
 C:\Users\bena\Source\Repos\BensBranchBuilder\BensBranchBuilder\obj\Debug\BensBranchBuilder.csproj.GenerateResource.cache
 C:\Users\bena\Source\Repos\BensBranchBuilder\BensBranchBuilder\obj\Debug\BensBranchBuilder.csproj.CoreCompileInputs.cache
 C:\Users\bena\Source\Repos\BensBranchBuilder\BensBranchBuilder\obj\Debug\BensBranchBuilder.exe
 C:\Users\bena\Source\Repos\BensBranchBuilder\BensBranchBuilder\obj\Debug\BensBranchBuilder.pdb
-C:\Users\bena\Source\Repos\BensBranchBuilder\BensBranchBuilder\bin\Debug\BatFiles\BuildPrestaging.bat
+C:\Users\bena\Source\Repos\BensBranchBuilder\BensBranchBuilder\obj\Debug\BensBranchBuilder.BensBranchBuilder.resources

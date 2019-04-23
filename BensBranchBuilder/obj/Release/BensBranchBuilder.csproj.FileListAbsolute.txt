@@ -1,10 +1,9 @@
 C:\Users\bena\Source\Repos\BensBranchBuilder\BensBranchBuilder\bin\Release\BensBranchBuilder.exe.config
 C:\Users\bena\Source\Repos\BensBranchBuilder\BensBranchBuilder\bin\Release\BensBranchBuilder.exe
 C:\Users\bena\Source\Repos\BensBranchBuilder\BensBranchBuilder\bin\Release\BensBranchBuilder.pdb
-C:\Users\bena\Source\Repos\BensBranchBuilder\BensBranchBuilder\obj\Release\BensBranchBuilder.csprojAssemblyReference.cache
+C:\Users\bena\Source\Repos\BensBranchBuilder\BensBranchBuilder\obj\Release\BensBranchBuilder.BensBranchBuilder.resources
 C:\Users\bena\Source\Repos\BensBranchBuilder\BensBranchBuilder\obj\Release\BensBranchBuilder.Properties.Resources.resources
 C:\Users\bena\Source\Repos\BensBranchBuilder\BensBranchBuilder\obj\Release\BensBranchBuilder.csproj.GenerateResource.cache
 C:\Users\bena\Source\Repos\BensBranchBuilder\BensBranchBuilder\obj\Release\BensBranchBuilder.csproj.CoreCompileInputs.cache
 C:\Users\bena\Source\Repos\BensBranchBuilder\BensBranchBuilder\obj\Release\BensBranchBuilder.exe
 C:\Users\bena\Source\Repos\BensBranchBuilder\BensBranchBuilder\obj\Release\BensBranchBuilder.pdb
-C:\Users\bena\Source\Repos\BensBranchBuilder\BensBranchBuilder\obj\Release\BensBranchBuilder.BensBranchBuilder.resources
