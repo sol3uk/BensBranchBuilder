@@ -39,8 +39,8 @@ namespace BensBranchBuilder
 		}
 
 		public string batPath { get; set; } = @"BatFiles\";
-		public string buildCMDProject { get; set; } = @"MSBuild.exe .\web\Web\JobLogic\JobLogic.csproj /property:WarningLevel=0";
-		public string buildCMDSolution { get; set; } = @"Msbuild.exe .\web\JobLogic.Published.sln /property:WarningLevel=0";
+		public string buildCMDProject { get; set; } = @"MSBuild.exe .\web\Web\JobLogic\JobLogic.csproj /property:WarningLevel=0 -maxcpucount:4";
+		public string buildCMDSolution { get; set; } = @"Msbuild.exe .\web\JobLogic.Published.sln /property:WarningLevel=0 -maxcpucount:4";
 
 		public string BuildBatFile(ProcessType process, string customPath)
 		{
