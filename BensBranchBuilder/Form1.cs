@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.ComponentModel;
+using System.Configuration;
 using System.Data;
 using System.Diagnostics;
 using System.Drawing;
@@ -38,9 +39,11 @@ namespace BensBranchBuilder
 			Rebuild = 3
 		}
 
-		public string batPath { get; set; } = @"BatFiles\";
-		public string buildCMDProject { get; set; } = @"MSBuild.exe .\web\Web\JobLogic\JobLogic.csproj /property:WarningLevel=0 -maxcpucount:4";
-		public string buildCMDSolution { get; set; } = @"Msbuild.exe .\web\JobLogic.Published.sln /property:WarningLevel=0 -maxcpucount:4";
+		public string BatPath { get; set; } = @"BatFiles\";
+		public string BuildCMDProject { get; set; } = @"MSBuild.exe .\web\Web\JobLogic\JobLogic.csproj /property:WarningLevel=0 -maxcpucount:4";
+		public string BuildCMDSolution { get; set; } = @"Msbuild.exe .\web\JobLogic.Published.sln /property:WarningLevel=0 -maxcpucount:4";
+		public string Vs2017DevCMD { get; set; } = @"""C:\Program Files (x86)\Microsoft Visual Studio\2017\Community\Common7\Tools\VsDevCmd.bat""";
+		public string[] SavedFolders { get; set; }
 
 		public string BuildBatFile(ProcessType process, string customPath)
 		{
@@ -61,40 +64,40 @@ namespace BensBranchBuilder
 					break;
 			}
 			
-			var vs2017DevCMD = @"""C:\Program Files (x86)\Microsoft Visual Studio\2017\Community\Common7\Tools\VsDevCmd.bat""";
-			if (File.Exists(batPath + batFileName))
-				File.Delete(batPath + batFileName);
+			
+			if (File.Exists(BatPath + batFileName))
+				File.Delete(BatPath + batFileName);
 
 			var batFile =
-			@"call " + vs2017DevCMD + Environment.NewLine +
+			@"call " + Vs2017DevCMD + Environment.NewLine +
 			@"echo cd " + customPath + Environment.NewLine +
 			@"cd " + customPath + Environment.NewLine +
 			@"echo..\NuGet.exe restore .\web\JobLogic.Published.sln" + Environment.NewLine +
 			@"..\NuGet.exe restore .\web\JobLogic.Published.sln" + Environment.NewLine;
 			if (process == ProcessType.Build)
 			{
-				batFile += @"echo " + buildCMDProject + Environment.NewLine +
-								@"" + buildCMDProject + Environment.NewLine;
+				batFile += @"echo " + BuildCMDProject + Environment.NewLine +
+								@"" + BuildCMDProject + Environment.NewLine;
 				if (checkBox1.Checked)
 				{
-					batFile += @"echo " + buildCMDSolution + Environment.NewLine +
-									@"" + buildCMDSolution + Environment.NewLine;
+					batFile += @"echo " + BuildCMDSolution + Environment.NewLine +
+									@"" + BuildCMDSolution + Environment.NewLine;
 				}
 			}
 			else if (process == ProcessType.Rebuild)
 			{
-				batFile += @"echo " + buildCMDProject + " /t:rebuild" + Environment.NewLine +
-								@"" + buildCMDProject + " /t:rebuild" + Environment.NewLine;
+				batFile += @"echo " + BuildCMDProject + " /t:rebuild" + Environment.NewLine +
+								@"" + BuildCMDProject + " /t:rebuild" + Environment.NewLine;
 				if (checkBox1.Checked)
 				{
-					batFile += @"echo " + buildCMDSolution + " /t:rebuild" + Environment.NewLine +
-									@"" + buildCMDSolution + " /t:rebuild" + Environment.NewLine;
+					batFile += @"echo " + BuildCMDSolution + " /t:rebuild" + Environment.NewLine +
+									@"" + BuildCMDSolution + " /t:rebuild" + Environment.NewLine;
 				}
 			}
 
 			batFile += @"pause";
 			// Creates new bat file
-			using (FileStream fs = File.Create(batPath + batFileName))
+			using (FileStream fs = File.Create(BatPath + batFileName))
 			{
 				Byte[] fileData = new UTF8Encoding(true).GetBytes(batFile);
 				fs.Write(fileData, 0, fileData.Length);
@@ -105,6 +108,18 @@ namespace BensBranchBuilder
 
 		public void SaveLastPath()
 		{
+
+			System.Configuration.Configuration config = ConfigurationManager.OpenExeConfiguration(ConfigurationUserLevel.None); // Add an Application Setting.
+
+			config.AppSettings.Settings.Add("ModificationDate",
+						   DateTime.Now.ToLongTimeString() + " ");
+
+			Vs2017DevCMD = ConfigurationManager.AppSettings["CMDInstallLocation"];
+			SavedFolders = ConfigurationManager.AppSettings["SavedFolders"].Split(',').Select(s => s.Trim()).ToArray();
+
+			// Save the changes in App.config file.
+
+			config.Save(ConfigurationSaveMode.Modified);
 			// Creates new file
 			using (FileStream fs = File.Create(@"cache.txt"))
 			{
