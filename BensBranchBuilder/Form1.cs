@@ -15,23 +15,6 @@ namespace BensBranchBuilder
 {
 	public partial class BensBranchBuilder : Form
 	{
-		public BensBranchBuilder()
-		{
-			InitializeComponent();
-			if (File.Exists("cache.txt"))
-			{
-				// Open the stream and read it back.    
-				using (StreamReader sr = File.OpenText("cache.txt"))
-				{
-					string s = "";
-					while ((s = sr.ReadLine()) != null)
-					{
-						textBox1.Text = s;
-					}
-				}
-			}
-		}
-
 		public enum ProcessType
 		{
 			Restore = 1,
@@ -43,7 +26,41 @@ namespace BensBranchBuilder
 		public string BuildCMDProject { get; set; } = @"MSBuild.exe .\web\Web\JobLogic\JobLogic.csproj /property:WarningLevel=0 -maxcpucount:4";
 		public string BuildCMDSolution { get; set; } = @"Msbuild.exe .\web\JobLogic.Published.sln /property:WarningLevel=0 -maxcpucount:4";
 		public string Vs2017DevCMD { get; set; } = @"""C:\Program Files (x86)\Microsoft Visual Studio\2017\Community\Common7\Tools\VsDevCmd.bat""";
-		public string[] SavedFolders { get; set; }
+		public string CMDInstallLocation { get; set; }
+		public string CachedFolderLocation { get; set; }
+		public List<string> SavedFolders { get; set; }
+
+		public BensBranchBuilder()
+		{
+			InitializeComponent();
+
+			folderLocation.Text = "";
+			folderLocation.Items.Clear();
+
+			//Get setting from app config
+			folderLocation.Text = ConfigurationManager.AppSettings["CachedFolderLocation"];
+			CMDInstallLocation = @"""" + ConfigurationManager.AppSettings["CMDInstallLocation"] + @"""";
+			SavedFolders = ConfigurationManager.AppSettings["SavedFolders"].Split(',').Where(f => !string.IsNullOrEmpty(f)).Select(s => s.Trim()).ToList();
+			folderLocation.Items.AddRange(SavedFolders.ToArray());
+		}
+
+		public void RefreshValues()
+		{
+			//Clear Values
+			folderLocation.Text = "";
+			folderLocation.Items.Clear();
+			SavedFolders.Clear();
+			//Get setting from app config
+			folderLocation.Text = ConfigurationManager.AppSettings["CachedFolderLocation"];
+			CMDInstallLocation = @"""" + ConfigurationManager.AppSettings["CMDInstallLocation"] + @"""";
+			SavedFolders = ConfigurationManager.AppSettings["SavedFolders"].Split(',').Where(f => !string.IsNullOrEmpty(f)).Select(s => s.Trim()).ToList();
+			folderLocation.Items.AddRange(SavedFolders.ToArray());
+		}
+
+		private void BensBranchBuilder_Load(object sender, EventArgs e)
+		{
+			RefreshValues();
+		}
 
 		public string BuildBatFile(ProcessType process, string customPath)
 		{
@@ -63,8 +80,8 @@ namespace BensBranchBuilder
 				default:
 					break;
 			}
-			
-			
+
+
 			if (File.Exists(BatPath + batFileName))
 				File.Delete(BatPath + batFileName);
 
@@ -78,7 +95,7 @@ namespace BensBranchBuilder
 			{
 				batFile += @"echo " + BuildCMDProject + Environment.NewLine +
 								@"" + BuildCMDProject + Environment.NewLine;
-				if (checkBox1.Checked)
+				if (inputBox.Checked)
 				{
 					batFile += @"echo " + BuildCMDSolution + Environment.NewLine +
 									@"" + BuildCMDSolution + Environment.NewLine;
@@ -88,7 +105,7 @@ namespace BensBranchBuilder
 			{
 				batFile += @"echo " + BuildCMDProject + " /t:rebuild" + Environment.NewLine +
 								@"" + BuildCMDProject + " /t:rebuild" + Environment.NewLine;
-				if (checkBox1.Checked)
+				if (inputBox.Checked)
 				{
 					batFile += @"echo " + BuildCMDSolution + " /t:rebuild" + Environment.NewLine +
 									@"" + BuildCMDSolution + " /t:rebuild" + Environment.NewLine;
@@ -108,24 +125,12 @@ namespace BensBranchBuilder
 
 		public void SaveLastPath()
 		{
-
-			System.Configuration.Configuration config = ConfigurationManager.OpenExeConfiguration(ConfigurationUserLevel.None); // Add an Application Setting.
-
-			config.AppSettings.Settings.Add("ModificationDate",
-						   DateTime.Now.ToLongTimeString() + " ");
-
-			Vs2017DevCMD = ConfigurationManager.AppSettings["CMDInstallLocation"];
-			SavedFolders = ConfigurationManager.AppSettings["SavedFolders"].Split(',').Select(s => s.Trim()).ToArray();
+			System.Configuration.Configuration config = ConfigurationManager.OpenExeConfiguration(ConfigurationUserLevel.None);
 
 			// Save the changes in App.config file.
-
+			config.AppSettings.Settings["CachedFolderLocation"].Value = folderLocation.Text;
+			config.AppSettings.Settings["SavedFolders"].Value = string.Join(",", SavedFolders);
 			config.Save(ConfigurationSaveMode.Modified);
-			// Creates new file
-			using (FileStream fs = File.Create(@"cache.txt"))
-			{
-				Byte[] fileData = new UTF8Encoding(true).GetBytes(textBox1.Text);
-				fs.Write(fileData, 0, fileData.Length);
-			}
 		}
 
 		public void RunBatFile(ProcessType process)
@@ -134,9 +139,9 @@ namespace BensBranchBuilder
 			Process proc = null;
 			try
 			{
-				if (Directory.Exists(textBox1.Text))
+				if (Directory.Exists(folderLocation.Text))
 				{
-					fileName = BuildBatFile(process, textBox1.Text);
+					fileName = BuildBatFile(process, folderLocation.Text);
 					proc = new Process();
 					proc.StartInfo.WorkingDirectory = Directory.GetCurrentDirectory() + @"\BatFiles";
 					//proc.StartInfo.FileName = "BuildPrestaging.bat";
@@ -162,7 +167,7 @@ namespace BensBranchBuilder
 		{
 			if (folderBrowserDialog1.ShowDialog() == DialogResult.OK)
 			{
-				textBox1.Text = folderBrowserDialog1.SelectedPath;
+				folderLocation.Text = folderBrowserDialog1.SelectedPath;
 			}
 		}
 		private void button1_Click(object sender, EventArgs e)
@@ -193,11 +198,50 @@ namespace BensBranchBuilder
 		{
 
 		}
-
 		private void textBox1_TextChanged(object sender, EventArgs e)
 		{
 
 		}
+		private void comboBox1_SelectedIndexChanged(object sender, EventArgs e)
+		{
+
+		}
+
+
+		private void toolTip1_Popup(object sender, PopupEventArgs e)
+		{
+
+		}
 		#endregion
+
+		private void button5_Click(object sender, EventArgs e)
+		{
+			if (SavedFolders.Contains(folderLocation.Text))
+			{
+				MessageBox.Show("You've already added this folder!");
+			}
+			else if (string.IsNullOrEmpty(folderLocation.Text))
+			{
+				MessageBox.Show("Path empty!");
+			}
+			else
+			{
+				var confirm = MessageBox.Show("Are you sure?", "Add path to favourites", MessageBoxButtons.YesNo);
+				if (confirm == DialogResult.Yes)
+				{
+					SavedFolders.Add(folderLocation.Text);
+					folderLocation.Items.Add(folderLocation.Text);
+				}
+			}
+		}
+
+		//Settings button
+		private void button6_Click(object sender, EventArgs e)
+		{
+			SettingsForm settings = new SettingsForm();
+			settings.Show();
+			settings.CMDInstallLocation = ConfigurationManager.AppSettings["CMDInstallLocation"];
+			settings.SavedDevCMDs = ConfigurationManager.AppSettings["SavedDevCMDs"].Split(',').Where(f => !string.IsNullOrEmpty(f)).Select(s => s.Trim()).ToList();
+		}
 	}
 }
