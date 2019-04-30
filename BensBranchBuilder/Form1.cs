@@ -39,7 +39,10 @@ namespace BensBranchBuilder
 
 			//Get setting from app config
 			folderLocation.Text = ConfigurationManager.AppSettings["CachedFolderLocation"];
-			CMDInstallLocation = @"""" + ConfigurationManager.AppSettings["CMDInstallLocation"] + @"""";
+			if (string.IsNullOrEmpty(ConfigurationManager.AppSettings["CMDInstallLocation"]))
+			{
+				CMDInstallLocation = @"""" + ConfigurationManager.AppSettings["CMDInstallLocation"] + @"""";
+			}
 			SavedFolders = ConfigurationManager.AppSettings["SavedFolders"].Split(',').Where(f => !string.IsNullOrEmpty(f)).Select(s => s.Trim()).ToList();
 			folderLocation.Items.AddRange(SavedFolders.ToArray());
 		}
@@ -52,7 +55,10 @@ namespace BensBranchBuilder
 			SavedFolders.Clear();
 			//Get setting from app config
 			folderLocation.Text = ConfigurationManager.AppSettings["CachedFolderLocation"];
-			CMDInstallLocation = @"""" + ConfigurationManager.AppSettings["CMDInstallLocation"] + @"""";
+			if (string.IsNullOrEmpty(ConfigurationManager.AppSettings["CMDInstallLocation"]))
+			{
+				CMDInstallLocation = @"""" + ConfigurationManager.AppSettings["CMDInstallLocation"] + @"""";
+			}
 			SavedFolders = ConfigurationManager.AppSettings["SavedFolders"].Split(',').Where(f => !string.IsNullOrEmpty(f)).Select(s => s.Trim()).ToList();
 			folderLocation.Items.AddRange(SavedFolders.ToArray());
 		}
@@ -64,63 +70,97 @@ namespace BensBranchBuilder
 
 		public string BuildBatFile(ProcessType process, string customPath)
 		{
-			//Initialise and set bat file name
-			var batFileName = "";
-			switch (process)
+			//Checks if NuGet.exe is available
+			var nuGetCheck = customPath.Substring(0, customPath.LastIndexOf(@"\")) + @"\NuGet.exe";
+			//Checks if joblogic solution is available
+			var joblogicSLNCheck = customPath + @"\web\JobLogic.Published.sln";
+			if (File.Exists(nuGetCheck) && File.Exists(joblogicSLNCheck))
 			{
-				case ProcessType.Restore:
-					batFileName = "BranchRestore.bat";
-					break;
-				case ProcessType.Build:
-					batFileName = "BranchBuild.bat";
-					break;
-				case ProcessType.Rebuild:
-					batFileName = "BranchRebuild.bat";
-					break;
-				default:
-					break;
-			}
-
-
-			if (File.Exists(BatPath + batFileName))
-				File.Delete(BatPath + batFileName);
-
-			var batFile =
-			@"call " + Vs2017DevCMD + Environment.NewLine +
-			@"echo cd " + customPath + Environment.NewLine +
-			@"cd " + customPath + Environment.NewLine +
-			@"echo..\NuGet.exe restore .\web\JobLogic.Published.sln" + Environment.NewLine +
-			@"..\NuGet.exe restore .\web\JobLogic.Published.sln" + Environment.NewLine;
-			if (process == ProcessType.Build)
-			{
-				batFile += @"echo " + BuildCMDProject + Environment.NewLine +
-								@"" + BuildCMDProject + Environment.NewLine;
-				if (inputBox.Checked)
+				//Initialise and set bat file name
+				var batFileName = "";
+				switch (process)
 				{
-					batFile += @"echo " + BuildCMDSolution + Environment.NewLine +
-									@"" + BuildCMDSolution + Environment.NewLine;
+					case ProcessType.Restore:
+						batFileName = "BranchRestore.bat";
+						break;
+					case ProcessType.Build:
+						batFileName = "BranchBuild.bat";
+						break;
+					case ProcessType.Rebuild:
+						batFileName = "BranchRebuild.bat";
+						break;
+					default:
+						break;
 				}
-			}
-			else if (process == ProcessType.Rebuild)
-			{
-				batFile += @"echo " + BuildCMDProject + " /t:rebuild" + Environment.NewLine +
-								@"" + BuildCMDProject + " /t:rebuild" + Environment.NewLine;
-				if (inputBox.Checked)
+
+
+				if (File.Exists(BatPath + batFileName))
+					File.Delete(BatPath + batFileName);
+
+				var batFile =
+				@"@echo off" + Environment.NewLine;
+				//Checks custom install location and uses 2017 by default if none found
+				var emptySetting = @"""" + @"""";
+				if (string.IsNullOrEmpty(CMDInstallLocation) || CMDInstallLocation == emptySetting)
 				{
-					batFile += @"echo " + BuildCMDSolution + " /t:rebuild" + Environment.NewLine +
-									@"" + BuildCMDSolution + " /t:rebuild" + Environment.NewLine;
+					MessageBox.Show("Custom dev console not found. Attempting to use VS 2017.");
+					batFile += @"call " + Vs2017DevCMD + Environment.NewLine;
 				}
-			}
+				else
+				{
+					batFile += @"call " + CMDInstallLocation + Environment.NewLine;
+				}
+				batFile +=
+				//@"echo cd " + customPath + Environment.NewLine +
+				@"cd " + customPath + Environment.NewLine +
+				//@"echo..\NuGet.exe restore .\web\JobLogic.Published.sln" + Environment.NewLine +
+				@"..\NuGet.exe restore .\web\JobLogic.Published.sln" + Environment.NewLine;
+				if (process == ProcessType.Build)
+				{
+					batFile += @"echo " + BuildCMDProject + Environment.NewLine +
+									@"" + BuildCMDProject + Environment.NewLine;
+					if (inputBox.Checked)
+					{
+						batFile += @"echo " + BuildCMDSolution + Environment.NewLine +
+										@"" + BuildCMDSolution + Environment.NewLine;
+					}
+				}
+				else if (process == ProcessType.Rebuild)
+				{
+					batFile += @"echo " + BuildCMDProject + " /t:rebuild" + Environment.NewLine +
+									@"" + BuildCMDProject + " /t:rebuild" + Environment.NewLine;
+					if (inputBox.Checked)
+					{
+						batFile += @"echo " + BuildCMDSolution + " /t:rebuild" + Environment.NewLine +
+										@"" + BuildCMDSolution + " /t:rebuild" + Environment.NewLine;
+					}
+				}
 
-			batFile += @"pause";
-			// Creates new bat file
-			using (FileStream fs = File.Create(BatPath + batFileName))
+				batFile += @"pause";
+				// Creates new bat file
+				using (FileStream fs = File.Create(BatPath + batFileName))
+				{
+					Byte[] fileData = new UTF8Encoding(true).GetBytes(batFile);
+					fs.Write(fileData, 0, fileData.Length);
+				}
+
+				return batFileName;
+			}
+			else if (!File.Exists(nuGetCheck))
 			{
-				Byte[] fileData = new UTF8Encoding(true).GetBytes(batFile);
-				fs.Write(fileData, 0, fileData.Length);
+				MessageBox.Show("NuGet.exe not found. Please ensure you have a copy of NuGet.exe placed in : " + customPath.Substring(0, customPath.LastIndexOf(@"\")));
+				return null;
 			}
-
-			return batFileName;
+			else if (!File.Exists(joblogicSLNCheck))
+			{
+				MessageBox.Show("Joblogic solution not found. Please ensure you are trying to build a Joblogic branch folder");
+				return null;
+			}
+			else
+			{
+				MessageBox.Show("Something unexpected went wrong!");
+				return null;
+			}
 		}
 
 		public void SaveLastPath()
@@ -142,13 +182,16 @@ namespace BensBranchBuilder
 				if (Directory.Exists(folderLocation.Text))
 				{
 					fileName = BuildBatFile(process, folderLocation.Text);
-					proc = new Process();
-					proc.StartInfo.WorkingDirectory = Directory.GetCurrentDirectory() + @"\BatFiles";
-					//proc.StartInfo.FileName = "BuildPrestaging.bat";
-					proc.StartInfo.FileName = fileName;
-					proc.StartInfo.CreateNoWindow = false;
-					//MessageBox.Show(proc.StartInfo.WorkingDirectory);
-					proc.Start();
+					if (!string.IsNullOrEmpty(fileName))
+					{
+						proc = new Process();
+						proc.StartInfo.WorkingDirectory = Directory.GetCurrentDirectory() + @"\BatFiles";
+						//proc.StartInfo.FileName = "BuildPrestaging.bat";
+						proc.StartInfo.FileName = fileName;
+						proc.StartInfo.CreateNoWindow = false;
+						//MessageBox.Show(proc.StartInfo.WorkingDirectory);
+						proc.Start();
+					}
 					SaveLastPath();
 					Application.Exit();
 				}
@@ -170,22 +213,68 @@ namespace BensBranchBuilder
 				folderLocation.Text = folderBrowserDialog1.SelectedPath;
 			}
 		}
+		//NuGet Restore
 		private void button1_Click(object sender, EventArgs e)
 		{
 			var process = ProcessType.Restore;
 			RunBatFile(process);
 		}
-
+		//Build
 		private void button2_Click(object sender, EventArgs e)
 		{
 			var process = ProcessType.Build;
 			RunBatFile(process);
 		}
-
+		//Rebuild
 		private void button3_Click(object sender, EventArgs e)
 		{
 			var process = ProcessType.Rebuild;
 			RunBatFile(process);
+		}
+
+		//Add Folder to Favourites
+		private void button5_Click(object sender, EventArgs e)
+		{
+			if (SavedFolders.Contains(folderLocation.Text))
+			{
+				MessageBox.Show("You've already added this folder!");
+			}
+			else if (string.IsNullOrEmpty(folderLocation.Text))
+			{
+				MessageBox.Show("Path empty!");
+			}
+			else
+			{
+				//Checks if NuGet.exe is available
+				var nuGetCheck = folderLocation.Text.Substring(0, folderLocation.Text.LastIndexOf(@"\")) + @"\NuGet.exe";
+				//Checks if joblogic solution is available
+				var joblogicSLNCheck = folderLocation.Text + @"\web\JobLogic.Published.sln";
+				if (File.Exists(nuGetCheck) && File.Exists(joblogicSLNCheck))
+				{
+					var confirm = MessageBox.Show("Are you sure?", "Add path to favourites", MessageBoxButtons.YesNo);
+					if (confirm == DialogResult.Yes)
+					{
+						SavedFolders.Add(folderLocation.Text);
+						folderLocation.Items.Add(folderLocation.Text);
+					}
+				}
+				else
+				{
+					if (!File.Exists(nuGetCheck))
+						MessageBox.Show("NuGet.exe not found. Please ensure you have a copy of NuGet.exe placed in : " + folderLocation.Text.Substring(0, folderLocation.Text.LastIndexOf(@"\")));
+					if (!File.Exists(joblogicSLNCheck))
+						MessageBox.Show("Joblogic solution not found. Please ensure you are trying to add a Joblogic branch folder");
+				}
+			}
+		}
+
+		//Settings button
+		private void button6_Click(object sender, EventArgs e)
+		{
+			SettingsForm settings = new SettingsForm();
+			settings.Show();
+			settings.CMDInstallLocation = ConfigurationManager.AppSettings["CMDInstallLocation"];
+			settings.SavedDevCMDs = ConfigurationManager.AppSettings["SavedDevCMDs"].Split(',').Where(f => !string.IsNullOrEmpty(f)).Select(s => s.Trim()).ToList();
 		}
 		#endregion
 
@@ -214,34 +303,5 @@ namespace BensBranchBuilder
 		}
 		#endregion
 
-		private void button5_Click(object sender, EventArgs e)
-		{
-			if (SavedFolders.Contains(folderLocation.Text))
-			{
-				MessageBox.Show("You've already added this folder!");
-			}
-			else if (string.IsNullOrEmpty(folderLocation.Text))
-			{
-				MessageBox.Show("Path empty!");
-			}
-			else
-			{
-				var confirm = MessageBox.Show("Are you sure?", "Add path to favourites", MessageBoxButtons.YesNo);
-				if (confirm == DialogResult.Yes)
-				{
-					SavedFolders.Add(folderLocation.Text);
-					folderLocation.Items.Add(folderLocation.Text);
-				}
-			}
-		}
-
-		//Settings button
-		private void button6_Click(object sender, EventArgs e)
-		{
-			SettingsForm settings = new SettingsForm();
-			settings.Show();
-			settings.CMDInstallLocation = ConfigurationManager.AppSettings["CMDInstallLocation"];
-			settings.SavedDevCMDs = ConfigurationManager.AppSettings["SavedDevCMDs"].Split(',').Where(f => !string.IsNullOrEmpty(f)).Select(s => s.Trim()).ToList();
-		}
 	}
 }
