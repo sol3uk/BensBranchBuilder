@@ -138,6 +138,7 @@ namespace BensBranchBuilder
 
 				batFile += @"pause";
 				// Creates new bat file
+				Directory.CreateDirectory(Directory.GetCurrentDirectory() + @"\BatFiles");
 				using (FileStream fs = File.Create(BatPath + batFileName))
 				{
 					Byte[] fileData = new UTF8Encoding(true).GetBytes(batFile);
@@ -185,6 +186,7 @@ namespace BensBranchBuilder
 					if (!string.IsNullOrEmpty(fileName))
 					{
 						proc = new Process();
+						Directory.CreateDirectory(Directory.GetCurrentDirectory() + @"\BatFiles");
 						proc.StartInfo.WorkingDirectory = Directory.GetCurrentDirectory() + @"\BatFiles";
 						//proc.StartInfo.FileName = "BuildPrestaging.bat";
 						proc.StartInfo.FileName = fileName;

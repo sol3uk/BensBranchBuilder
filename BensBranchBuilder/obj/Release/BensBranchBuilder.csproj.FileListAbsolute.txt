@@ -7,4 +7,4 @@ C:\Users\bena\Source\Repos\BensBranchBuilder\BensBranchBuilder\obj\Release\BensB
 C:\Users\bena\Source\Repos\BensBranchBuilder\BensBranchBuilder\obj\Release\BensBranchBuilder.csproj.CoreCompileInputs.cache
 C:\Users\bena\Source\Repos\BensBranchBuilder\BensBranchBuilder\obj\Release\BensBranchBuilder.exe
 C:\Users\bena\Source\Repos\BensBranchBuilder\BensBranchBuilder\obj\Release\BensBranchBuilder.pdb
-C:\Users\bena\Source\Repos\BensBranchBuilder\BensBranchBuilder\obj\Release\BensBranchBuilder.csprojAssemblyReference.cache
+C:\Users\bena\Source\Repos\BensBranchBuilder\BensBranchBuilder\obj\Release\BensBranchBuilder.SettingsForm.resources
