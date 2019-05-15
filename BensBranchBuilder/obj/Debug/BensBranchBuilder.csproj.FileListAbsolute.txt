@@ -8,3 +8,4 @@ C:\Users\bena\Source\Repos\BensBranchBuilder\BensBranchBuilder\obj\Debug\BensBra
 C:\Users\bena\Source\Repos\BensBranchBuilder\BensBranchBuilder\obj\Debug\BensBranchBuilder.exe
 C:\Users\bena\Source\Repos\BensBranchBuilder\BensBranchBuilder\obj\Debug\BensBranchBuilder.pdb
 C:\Users\bena\Source\Repos\BensBranchBuilder\BensBranchBuilder\obj\Debug\BensBranchBuilder.SettingsForm.resources
+C:\Users\bena\Source\Repos\BensBranchBuilder\BensBranchBuilder\obj\Debug\BensBranchBuilder.csprojAssemblyReference.cache
