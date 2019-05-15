@@ -166,7 +166,7 @@ namespace BensBranchBuilder
 			System.Configuration.Configuration config = ConfigurationManager.OpenExeConfiguration(ConfigurationUserLevel.None);
 
 			// Save the changes in App.config file.
-			config.AppSettings.Settings["CachedFolderLocation"].Value = folderLocation.Text;
+			config.AppSettings.Settings["CachedFolderLocation"].Value = CachedFolderLocation;
 			config.AppSettings.Settings["SavedFolders"].Value = string.Join(",", SavedFolders);
 			config.Save(ConfigurationSaveMode.Modified);
 		}
@@ -253,8 +253,10 @@ namespace BensBranchBuilder
 					var confirm = MessageBox.Show("Are you sure?", "Add path to favourites", MessageBoxButtons.YesNo);
 					if (confirm == DialogResult.Yes)
 					{
+						CachedFolderLocation = folderLocation.Text;
 						SavedFolders.Add(folderLocation.Text);
 						folderLocation.Items.Add(folderLocation.Text);
+						SaveLastPath();
 					}
 				}
 				else
