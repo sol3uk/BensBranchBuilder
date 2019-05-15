@@ -39,22 +39,26 @@ namespace BensBranchBuilder
 
 			//Get setting from app config
 			folderLocation.Text = ConfigurationManager.AppSettings["CachedFolderLocation"];
-			CMDInstallLocation = @"""" + ConfigurationManager.AppSettings["CMDInstallLocation"] + @"""";
+			if (string.IsNullOrEmpty(ConfigurationManager.AppSettings["CMDInstallLocation"]))
+			{
+				CMDInstallLocation = @"""" + ConfigurationManager.AppSettings["CMDInstallLocation"] + @"""";
+			}
 			SavedFolders = ConfigurationManager.AppSettings["SavedFolders"].Split(',').Where(f => !string.IsNullOrEmpty(f)).Select(s => s.Trim()).ToList();
 			folderLocation.Items.AddRange(SavedFolders.ToArray());
 		}
 
 		public void RefreshValues()
 		{
-			//Forces access to the config file and allows them to be re-evaluated
-			ConfigurationManager.RefreshSection("appSettings");
 			//Clear Values
 			folderLocation.Text = "";
 			folderLocation.Items.Clear();
 			SavedFolders.Clear();
 			//Get setting from app config
 			folderLocation.Text = ConfigurationManager.AppSettings["CachedFolderLocation"];
-			CMDInstallLocation = @"""" + ConfigurationManager.AppSettings["CMDInstallLocation"] + @"""";
+			if (string.IsNullOrEmpty(ConfigurationManager.AppSettings["CMDInstallLocation"]))
+			{
+				CMDInstallLocation = @"""" + ConfigurationManager.AppSettings["CMDInstallLocation"] + @"""";
+			}
 			SavedFolders = ConfigurationManager.AppSettings["SavedFolders"].Split(',').Where(f => !string.IsNullOrEmpty(f)).Select(s => s.Trim()).ToList();
 			folderLocation.Items.AddRange(SavedFolders.ToArray());
 		}
@@ -66,7 +70,6 @@ namespace BensBranchBuilder
 
 		public string BuildBatFile(ProcessType process, string customPath)
 		{
-			RefreshValues();
 			//Checks if NuGet.exe is available
 			var nuGetCheck = customPath.Substring(0, customPath.LastIndexOf(@"\")) + @"\NuGet.exe";
 			//Checks if joblogic solution is available
