@@ -24,7 +24,8 @@ namespace BensBranchBuilder
 
 		public string BatPath { get; set; } = @"BatFiles\";
 		public string BuildCMDProject { get; set; } = @"MSBuild.exe .\web\Web\JobLogic\JobLogic.csproj /property:WarningLevel=0 -maxcpucount:4";
-		public string BuildCMDSolution { get; set; } = @"Msbuild.exe .\web\JobLogic.Published.sln /property:WarningLevel=0 -maxcpucount:4";
+		public string SolutionName { get; set; }
+		public string BuildCMDSolution { get; set; }
 		public string Vs2017DevCMD { get; set; } = @"""C:\Program Files (x86)\Microsoft Visual Studio\2017\Community\Common7\Tools\VsDevCmd.bat""";
 		public string CMDInstallLocation { get; set; }
 		public string CachedFolderLocation { get; set; }
@@ -40,6 +41,8 @@ namespace BensBranchBuilder
 			//Get setting from app config
 			folderLocation.Text = ConfigurationManager.AppSettings["CachedFolderLocation"];
 			CMDInstallLocation = @"""" + ConfigurationManager.AppSettings["CMDInstallLocation"] + @"""";
+			SolutionName = ConfigurationManager.AppSettings["SolutionName"];
+			BuildCMDSolution = @"Msbuild.exe .\web\" + SolutionName + ".sln /property:WarningLevel=0 -maxcpucount:4";
 			SavedFolders = ConfigurationManager.AppSettings["SavedFolders"].Split(',').Where(f => !string.IsNullOrEmpty(f)).Select(s => s.Trim()).ToList();
 			folderLocation.Items.AddRange(SavedFolders.ToArray());
 		}
@@ -70,7 +73,7 @@ namespace BensBranchBuilder
 			//Checks if NuGet.exe is available
 			var nuGetCheck = customPath.Substring(0, customPath.LastIndexOf(@"\")) + @"\NuGet.exe";
 			//Checks if joblogic solution is available
-			var joblogicSLNCheck = customPath + @"\web\JobLogic.Published.sln";
+			var joblogicSLNCheck = customPath + @"\web\" + SolutionName + ".sln";
 			if (File.Exists(nuGetCheck) && File.Exists(joblogicSLNCheck))
 			{
 				//Initialise and set bat file name
@@ -110,8 +113,8 @@ namespace BensBranchBuilder
 				batFile +=
 				//@"echo cd " + customPath + Environment.NewLine +
 				@"cd " + customPath + Environment.NewLine +
-				//@"echo..\NuGet.exe restore .\web\JobLogic.Published.sln" + Environment.NewLine +
-				@"..\NuGet.exe restore .\web\JobLogic.Published.sln" + Environment.NewLine;
+				//@"echo..\NuGet.exe restore .\web\" + SolutionName + ".sln" + Environment.NewLine +
+				@"..\NuGet.exe restore .\web\" + SolutionName + ".sln" + Environment.NewLine;
 				if (process == ProcessType.Build)
 				{
 					batFile += @"echo " + BuildCMDProject + Environment.NewLine +
@@ -247,7 +250,7 @@ namespace BensBranchBuilder
 				//Checks if NuGet.exe is available
 				var nuGetCheck = folderLocation.Text.Substring(0, folderLocation.Text.LastIndexOf(@"\")) + @"\NuGet.exe";
 				//Checks if joblogic solution is available
-				var joblogicSLNCheck = folderLocation.Text + @"\web\JobLogic.Published.sln";
+				var joblogicSLNCheck = folderLocation.Text + @"\web\" + SolutionName + ".sln";
 				if (File.Exists(nuGetCheck) && File.Exists(joblogicSLNCheck))
 				{
 					var confirm = MessageBox.Show("Are you sure?", "Add path to favourites", MessageBoxButtons.YesNo);
