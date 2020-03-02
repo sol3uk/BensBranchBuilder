@@ -94,11 +94,30 @@ namespace BensBranchBuilder
 			}
 		}
 
+		//Clear Favourites
+		private void button2_Click(object sender, EventArgs e)
+		{
+			ClearFavourites();
+		}
+
 		//Save
 		private void button1_Click(object sender, EventArgs e)
 		{
 			SaveSettings();
 		}
+
+
+		public void ClearFavourites()
+		{
+			var confirm = MessageBox.Show("Are you sure?", "Are you sure you want to clear favourite locations?", MessageBoxButtons.YesNo);
+			if (confirm == DialogResult.Yes)
+				ConfigurationManager.AppSettings["SavedFolders"] = "";
+		}
+
+
+
+
+
 		private void folderBrowserDialog1_HelpRequest(object sender, EventArgs e)
 		{
 
@@ -108,5 +127,6 @@ namespace BensBranchBuilder
 		{
 
 		}
+
 	}
 }
