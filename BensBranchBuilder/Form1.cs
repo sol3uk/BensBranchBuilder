@@ -22,6 +22,8 @@ namespace BensBranchBuilder
 			Rebuild = 3
 		}
 
+		const string noSolutionError = "Solution not found. Solution can be changed in settings.";
+
 		public string BatPath { get; set; } = @"BatFiles\";
 		public string BuildCMDProject { get; set; } = @"MSBuild.exe .\web\Web\JobLogic\JobLogic.csproj /property:WarningLevel=0 -maxcpucount:4";
 		public string SolutionName { get; set; }
@@ -71,16 +73,11 @@ namespace BensBranchBuilder
 		{
 			RefreshValues();
 
-			if (customPath[customPath.Length - 1].ToString() == @"\")
-			{
-
-			}
-
 			//Checks if nuget.exe is available
 			var nuGetCheck = customPath.Substring(0, customPath.LastIndexOf(@"\")) + @"\nuget.exe";
-			//Checks if joblogic solution is available
-			var joblogicSLNCheck = customPath + @"\web\" + SolutionName + ".sln";
-			if (File.Exists(nuGetCheck) && File.Exists(joblogicSLNCheck))
+			//Checks if solution is available
+			var solutionCheck = customPath + @"\web\" + SolutionName + ".sln";
+			if (File.Exists(nuGetCheck) && File.Exists(solutionCheck))
 			{
 				//Initialise and set bat file name
 				var batFileName = "";
@@ -158,9 +155,9 @@ namespace BensBranchBuilder
 				MessageBox.Show("nuget.exe not found. Please ensure you have a copy of nuget.exe placed in : " + customPath.Substring(0, customPath.LastIndexOf(@"\")));
 				return null;
 			}
-			else if (!File.Exists(joblogicSLNCheck))
+			else if (!File.Exists(solutionCheck))
 			{
-				MessageBox.Show("Joblogic solution not found. Please ensure you are trying to build a Joblogic branch folder");
+				MessageBox.Show(noSolutionError);
 				return null;
 			}
 			else
@@ -187,6 +184,7 @@ namespace BensBranchBuilder
 			Process proc = null;
 			try
 			{
+				cleanInputBox();
 				if (Directory.Exists(folderLocation.Text))
 				{
 					fileName = BuildBatFile(process, folderLocation.Text);
@@ -211,6 +209,15 @@ namespace BensBranchBuilder
 			{
 				MessageBox.Show(ex.StackTrace.ToString());
 			}
+		}
+
+		private void cleanInputBox()
+		{
+			var path = folderLocation.Text;
+			if (path[path.Length - 1].ToString() == @"\") 
+				path = path.Remove(path.Length - 1, 1);
+
+			folderLocation.Text = path;
 		}
 
 		#region Buttons
@@ -256,14 +263,14 @@ namespace BensBranchBuilder
 			{
 				//Checks if nuget.exe is available
 				var nuGetPathCheck = folderLocation.Text.Substring(0, folderLocation.Text.LastIndexOf(@"\")) + @"\nuget.exe";
-				//Checks if joblogic solution is available
-				var joblogicSLNCheck = folderLocation.Text + @"\web\" + SolutionName + ".sln";
+				//Checks if solution is available
+				var solutionCheck = folderLocation.Text + @"\web\" + SolutionName + ".sln";
 
 				if (!File.Exists(nuGetPathCheck)) CopyNuGetToPath(nuGetPathCheck);
 
-				if (File.Exists(nuGetPathCheck) && File.Exists(joblogicSLNCheck))
+				if (File.Exists(nuGetPathCheck) && File.Exists(solutionCheck))
 				{
-					var confirm = MessageBox.Show("Are you sure?", "Add path to favourites", MessageBoxButtons.YesNo);
+					var confirm = MessageBox.Show("Are you sure you want to add this path to your favourites?", "Are you sure?", MessageBoxButtons.YesNo);
 					if (confirm == DialogResult.Yes)
 					{
 						CachedFolderLocation = folderLocation.Text;
@@ -276,8 +283,8 @@ namespace BensBranchBuilder
 				{
 					if (!File.Exists(nuGetPathCheck))
 						MessageBox.Show("nuget.exe not found. Please ensure you have a copy of nuget.exe placed in : " + folderLocation.Text.Substring(0, folderLocation.Text.LastIndexOf(@"\")));
-					if (!File.Exists(joblogicSLNCheck))
-						MessageBox.Show("Joblogic solution not found. Please ensure you are trying to add a Joblogic branch folder");
+					if (!File.Exists(solutionCheck))
+						MessageBox.Show(noSolutionError);
 				}
 			}
 		}

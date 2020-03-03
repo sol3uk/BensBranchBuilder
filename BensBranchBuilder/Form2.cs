@@ -35,6 +35,7 @@ namespace BensBranchBuilder
 
 			//Reassign Values
 			consoleLocation.Text = ConfigurationManager.AppSettings["CMDInstallLocation"];
+			solutionName.Text = ConfigurationManager.AppSettings["SolutionName"];
 			SavedDevCMDs = ConfigurationManager.AppSettings["SavedDevCMDs"].Split(',').Where(f => !string.IsNullOrEmpty(f)).Select(s => s.Trim()).ToList();
 			consoleLocation.Items.AddRange(SavedDevCMDs.ToArray());
 		}
@@ -57,22 +58,53 @@ namespace BensBranchBuilder
 		}
 		public void SaveSettings()
 		{
+			Configuration config = ConfigurationManager.OpenExeConfiguration(ConfigurationUserLevel.None);
+
 			if (!SavedDevCMDs.Contains(consoleLocation.Text))
 				AddToCombo();
 			if (!string.IsNullOrEmpty(consoleLocation.Text))
 			{
-				System.Configuration.Configuration config = ConfigurationManager.OpenExeConfiguration(ConfigurationUserLevel.None);
-
 				// Save the changes in App.config file.
 				config.AppSettings.Settings["CMDInstallLocation"].Value = consoleLocation.Text;
 				config.AppSettings.Settings["SavedDevCMDs"].Value = string.Join(",", SavedDevCMDs);
 				config.Save(ConfigurationSaveMode.Modified);
-				MessageBox.Show("Dev Console Set");
-				this.Close();
+			}
+			if (!string.IsNullOrEmpty(solutionName.Text))
+			{
+				config.AppSettings.Settings["SolutionName"].Value = solutionName.Text;
+				config.Save(ConfigurationSaveMode.Modified);
 			}
 
+			MessageBox.Show("Settings Saved");
+			this.Close();
 		}
 
+		//Save
+		private void button1_Click(object sender, EventArgs e)
+		{
+			SaveSettings();
+		}
+		//Clear Favourites
+		private void button2_Click(object sender, EventArgs e)
+		{
+			ClearFavourites();
+		}
+		//Select Solution
+		private void button3_Click(object sender, EventArgs e)
+		{
+			if (openFileDialog2.ShowDialog() == DialogResult.OK)
+			{
+				solutionName.Text = openFileDialog2.SafeFileName;
+			}
+		}
+		//Select VS Dev CMD Path
+		private void button4_Click(object sender, EventArgs e)
+		{
+			if (openFileDialog1.ShowDialog() == DialogResult.OK)
+			{
+				consoleLocation.Text = openFileDialog1.FileName;
+			}
+		}
 		//Add to Favourites
 		private void button5_Click(object sender, EventArgs e)
 		{
@@ -85,33 +117,15 @@ namespace BensBranchBuilder
 				AddToCombo();
 			}
 		}
-		//Select Path
-		private void button4_Click(object sender, EventArgs e)
-		{
-			if (openFileDialog1.ShowDialog() == DialogResult.OK)
-			{
-				consoleLocation.Text = openFileDialog1.FileName;
-			}
-		}
-
-		//Clear Favourites
-		private void button2_Click(object sender, EventArgs e)
-		{
-			ClearFavourites();
-		}
-
-		//Save
-		private void button1_Click(object sender, EventArgs e)
-		{
-			SaveSettings();
-		}
 
 
 		public void ClearFavourites()
 		{
-			var confirm = MessageBox.Show("Are you sure?", "Are you sure you want to clear favourite locations?", MessageBoxButtons.YesNo);
+			var confirm = MessageBox.Show("Are you sure you want to clear favourite locations?", "Are you sure?", MessageBoxButtons.YesNo);
 			if (confirm == DialogResult.Yes)
 				ConfigurationManager.AppSettings["SavedFolders"] = "";
+
+			MessageBox.Show("Favourites Cleared!");
 		}
 
 
@@ -127,6 +141,7 @@ namespace BensBranchBuilder
 		{
 
 		}
+
 
 	}
 }
