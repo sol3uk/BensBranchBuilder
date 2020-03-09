@@ -46,11 +46,7 @@ namespace BensBranchBuilder
 		}
 		public void AddToCombo()
 		{
-			if (string.IsNullOrEmpty(consoleLocation.Text))
-			{
-				MessageBox.Show("Path empty!");
-			}
-			else
+			if (!string.IsNullOrEmpty(consoleLocation.Text))
 			{
 				SavedDevCMDs.Add(consoleLocation.Text);
 				consoleLocation.Items.Add(consoleLocation.Text);
