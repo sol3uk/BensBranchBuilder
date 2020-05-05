@@ -25,7 +25,9 @@ namespace BensBranchBuilder
 		const string noSolutionError = "Solution not found. Solution can be changed in settings.";
 
 		public string BatPath { get; set; } = @"BatFiles\";
-		public string BuildCMDProject { get; set; } = @"MSBuild.exe .\web\Web\JobLogic\JobLogic.csproj /property:WarningLevel=0 -maxcpucount:4";
+        public string DeleteBinAndObjPath { get; set; } = @"Content\deleteBinAndObject.bat";
+        public string NugetPath { get; set; } = @"Content\nuget.exe";
+        public string BuildCMDProject { get; set; } = @"MSBuild.exe .\web\Web\JobLogic\JobLogic.csproj /property:WarningLevel=0 -maxcpucount:4";
 		public string SolutionName { get; set; }
 		public string BuildCMDSolution { get; set; }
 		public string Vs2017DevCMD { get; set; } = @"""C:\Program Files (x86)\Microsoft Visual Studio\2017\Community\Common7\Tools\VsDevCmd.bat""";
@@ -115,31 +117,35 @@ namespace BensBranchBuilder
 				}
 				batFile +=
 				//@"echo cd " + customPath + Environment.NewLine +
-				@"cd " + customPath + Environment.NewLine +
-				//@"echo..\nuget.exe restore .\web\" + SolutionName + ".sln" + Environment.NewLine +
-				@"..\nuget.exe restore .\web\" + SolutionName + ".sln" + Environment.NewLine;
-				if (process == ProcessType.Build)
-				{
-					batFile += @"echo " + BuildCMDProject + Environment.NewLine +
-									@"" + BuildCMDProject + Environment.NewLine;
-					if (inputBox.Checked)
-					{
-						batFile += @"echo " + BuildCMDSolution + Environment.NewLine +
-										@"" + BuildCMDSolution + Environment.NewLine;
-					}
-				}
-				else if (process == ProcessType.Rebuild)
-				{
-					batFile += @"echo " + BuildCMDProject + " /t:rebuild" + Environment.NewLine +
-									@"" + BuildCMDProject + " /t:rebuild" + Environment.NewLine;
-					if (inputBox.Checked)
-					{
-						batFile += @"echo " + BuildCMDSolution + " /t:rebuild" + Environment.NewLine +
-										@"" + BuildCMDSolution + " /t:rebuild" + Environment.NewLine;
-					}
-				}
+				@"cd /d " + customPath + Environment.NewLine +
+				//@"echo..\NuGet.exe restore .\web\" + SolutionName + ".sln" + Environment.NewLine +
+				@"..\NuGet.exe restore .\web\" + SolutionName + ".sln" + Environment.NewLine;
+                switch (process)
+                {
+                    case ProcessType.Build:
+                        batFile += @"echo " + BuildCMDProject + Environment.NewLine +
+                    @"" + BuildCMDProject + Environment.NewLine;
+                        if (inputBox.Checked)
+                        {
+                            batFile += @"echo " + BuildCMDSolution + Environment.NewLine +
+                                            @"" + BuildCMDSolution + Environment.NewLine;
+                        }
 
-				batFile += @"pause";
+                        break;
+                    case ProcessType.Rebuild:
+                    default:
+                        batFile += @"echo " + BuildCMDProject + " /t:rebuild" + Environment.NewLine +
+                        @"" + BuildCMDProject + " /t:rebuild" + Environment.NewLine;
+                        if (inputBox.Checked)
+                        {
+                            batFile += @"echo " + BuildCMDSolution + " /t:rebuild" + Environment.NewLine +
+                                            @"" + BuildCMDSolution + " /t:rebuild" + Environment.NewLine;
+                        }
+
+                        break;
+                }
+
+                batFile += @"pause";
 				// Creates new bat file
 				Directory.CreateDirectory(Directory.GetCurrentDirectory() + @"\BatFiles");
 				using (FileStream fs = File.Create(BatPath + batFileName))
@@ -329,7 +335,11 @@ namespace BensBranchBuilder
 		{
 
 		}
-		#endregion
-
-	}
+        #endregion
+        //Clean button
+        private void Button7_Click(object sender, EventArgs e)
+        {
+            var confirm = MessageBox.Show("Are you sure?", "This will delete all 'bin' and 'obj' folders from the location, please confirm.", MessageBoxButtons.YesNo);
+        }
+    }
 }
